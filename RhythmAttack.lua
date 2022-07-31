@@ -2,7 +2,7 @@ print("Rhythm Time Attacking script created by Nerdicous (https://lmaobox.net/fo
 --[[
 	Rhythm Time Attacking -- Nerdicous on LMAOBOX.net
 	Makes the player attack at a preset interval (RhythmAttackTime).
-	You can change these topmost variables in-game by typing "lua <name> = <value>"
+	You can change these topmost variables in-game by typing "lua <command> = <value>"
 --]]
 
 --RhythmAttackTime: The time (in seconds) before you are forced to attack
@@ -132,8 +132,8 @@ local boolean function CanHitscanEnemies()
 		
 		--Account for Aim FOV in the lmaobox GUI to determine when to start attacking
 		-- This has -185 because that's when other players enter the Aim FOV line from firstperson
-		local Angle = -(GetFOVAngle(LocalPlayerViewAngle, entities.GetLocalPlayer():GetAbsOrigin(), EnemyPlayer:GetAbsOrigin()) - 185)
-		if(Angle > gui.GetValue("aim fov")) then
+		local Angle = -(GetFOVAngle(LocalPlayerViewAngle, entities.GetLocalPlayer():GetAbsOrigin(), EnemyPlayer:GetAbsOrigin()) - 180)*0.75
+		if(Angle >= gui.GetValue("aim fov")) then
 			i = i + 1
 			goto continue
 		end
