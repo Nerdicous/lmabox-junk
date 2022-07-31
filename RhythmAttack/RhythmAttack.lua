@@ -15,32 +15,30 @@ print("Rhythm Time Attacking script created by Nerdicous (https://lmaobox.net/fo
 --RhythmMaximumDistance: The maximum HU distance between you and the target required to automatically fire. 0 to disable
 --RhythmToggleKey: The keybind constant to toggle this script
 
---RhythmSoundStep: The sound that plays every 1/4th of a beat
---RhythmSoundBeat: The sound that plays every time you are forced to attack
-
 --RhythmSafeMode: If true, the timer will only start when an enemy is able to be shot
 --RhythmUltraSafeMode: If true, the player won't attack when there isn't anything to shoot
 --RhythmContinueMode: If true, the timer won't reset when an enemy isn't able to be shot (Does nothing when RhythmUltraSafeMode is true)
 --RhythmOnlyForceAttacks: If true, the player will be unable to attack on their own, to include the aimbot tools
 
---RhythmNoBeatSound: If true, the beat sound won't play
+--RhythmSoundStep: The sound that plays every 1/4th of a beat
+--RhythmSoundBeat: The sound that plays every time you are forced to attack
 --RhythmNoStepSound: If true, the step sound won't play. Always false if RhythmAttackTime is under 0.6s
+--RhythmNoBeatSound: If true, the beat sound won't play
 
 RhythmAttackTime = 2
 RhythmMaximumDistance = 2000	--1 foot = 9 HU. 600 is recommended for closer-ranged classes
 RhythmToggleKey = MOUSE_4	-- https://lmaobox.net/lua/Lua_Constants/
-
---Sounds in the custom folder work also
-RhythmSoundStep = "ui/mm_medal_click.wav"
-RhythmSoundBeat = "ui/mm_rank_up_achieved.wav"
 
 RhythmSafeMode = false
 RhythmUltraSafeMode = true
 RhythmContinueMode = true
 RhythmOnlyForceAttacks = false
 
-RhythmNoBeatSound = false
+--Sounds in the custom folder work also
+RhythmSoundStep = "ui/mm_medal_click.wav"
+RhythmSoundBeat = "ui/mm_rank_up_achieved.wav"
 RhythmNoStepSound = false
+RhythmNoBeatSound = false
 
 
 local RhythmEnabled = true
@@ -179,8 +177,8 @@ local boolean function CanHitscanEnemies()
 			goto continue
 		end
 		
-		print(vector.Distance(LocalPlayerPos, EnemyPlayerPos))
-		if(vector.Distance(LocalPlayerPos, EnemyPlayerPos) > RhythmMaximumDistance) then
+		--Test for distance between you and the target
+		if(vector.Distance(LocalPlayerPos, EnemyPlayerPos) > RhythmMaximumDistance) and (RhythmMaximumDistance > 0) then
 			i = i + 1
 			goto continue
 		end
