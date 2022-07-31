@@ -132,10 +132,13 @@ local boolean function CanHitscanEnemies()
 		
 		--Account for Aim FOV in the lmaobox GUI to determine when to start attacking
 		-- This has -185 because that's when other players enter the Aim FOV line from firstperson
-		local Angle = -(GetFOVAngle(LocalPlayerViewAngle, entities.GetLocalPlayer():GetAbsOrigin(), EnemyPlayer:GetAbsOrigin()) - 180)*0.75
-		if(Angle >= gui.GetValue("aim fov")) then
-			i = i + 1
-			goto continue
+		if gui.GetValue("aim fov") < 170 then
+			local Angle = -(GetFOVAngle(LocalPlayerViewAngle, entities.GetLocalPlayer():GetAbsOrigin(), EnemyPlayer:GetAbsOrigin()) - 185)
+			print(Angle)
+			if(Angle > gui.GetValue("aim fov")) then
+				i = i + 1
+				goto continue
+			end
 		end
 
 		--Don't countdown if any of the "Ignore X" checks are involved
