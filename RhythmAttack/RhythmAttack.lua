@@ -1,32 +1,46 @@
 print("Rhythm Time Attacking script created by Nerdicous (https://lmaobox.net/forum/v/profile/34539432/Nerdicous)")
+--TODO in the future, implement a GUI. I'd consider this done right now, but a GUI will make this more user-friendly.
 --[[
 	Rhythm Time Attacking -- Nerdicous on LMAOBOX.net
 	Makes the player attack at a preset interval (RhythmAttackTime).
 	You can change these topmost variables in-game by typing "lua <command> = <value>"
 	
 	lua RhythmAttackTime = 1
+	lua RhythmMaximumDistance = 500
 	lua RhythmSafeMode = false
 	lua RhythmToggleKey = KEY_Z
 --]]
 
 --RhythmAttackTime: The time (in seconds) before you are forced to attack
+--RhythmMaximumDistance: The maximum HU distance between you and the target required to automatically fire. 0 to disable
+--RhythmToggleKey: The keybind constant to toggle this script
+
 --RhythmSoundStep: The sound that plays every 1/4th of a beat
 --RhythmSoundBeat: The sound that plays every time you are forced to attack
---RhythmSafeMode: If true, the timer will only start when an enemy is able to be shot
-	--(if true) RhythmContinueMode: If true, the timer won't reset when an enemy isn't able to be shot
-	--(if false) RhythmUltraSafeMode: If true, the player won't attack when there isn't anything to shoot
---RhythmOnlyForceAttacks: If true, the player will be unable to attack on their own, to include the aimbot tools
---RhythmNoSounds: If true, script sounds won't play
-RhythmAttackTime = 2.5
-RhythmSoundStep = "ui/mm_medal_click.wav"	--Sounds in the custom folder work also
-RhythmSoundBeat = "ui/mm_rank_up_achieved.wav"
-RhythmSafeMode = true
-RhythmContinueMode = false
-RhythmUltraSafeMode = true
-RhythmOnlyForceAttacks = false
-RhythmNoSounds = false
 
-RhythmToggleKey = MOUSE_4	--see https://lmaobox.net/lua/Lua_Constants/
+--RhythmSafeMode: If true, the timer will only start when an enemy is able to be shot
+--RhythmUltraSafeMode: If true, the player won't attack when there isn't anything to shoot
+--RhythmContinueMode: If true, the timer won't reset when an enemy isn't able to be shot (Does nothing when RhythmUltraSafeMode is true)
+--RhythmOnlyForceAttacks: If true, the player will be unable to attack on their own, to include the aimbot tools
+
+--RhythmNoBeatSound: If true, the beat sound won't play
+--RhythmNoStepSound: If true, the step sound won't play. Always false if RhythmAttackTime is under 0.6s
+
+RhythmAttackTime = 2
+RhythmMaximumDistance = 2000	--1 foot = 9 HU. 600 is recommended for closer-ranged classes
+RhythmToggleKey = MOUSE_4	-- https://lmaobox.net/lua/Lua_Constants/
+
+--Sounds in the custom folder work also
+RhythmSoundStep = "ui/mm_medal_click.wav"
+RhythmSoundBeat = "ui/mm_rank_up_achieved.wav"
+
+RhythmSafeMode = false
+RhythmUltraSafeMode = true
+RhythmContinueMode = true
+RhythmOnlyForceAttacks = false
+
+RhythmNoBeatSound = false
+RhythmNoStepSound = false
 
 
 local RhythmEnabled = true
@@ -75,9 +89,9 @@ local function OnCreateMove(cmd)
 	--Handled by increments, because attacking is ignored if we're reloading
 	if CurrentAttackingTick ~= 0 then
 		CurrentAttackingTick = CurrentAttackingTick + 1
-		--Force an attack if in a valid state to
-		if not (RhythmSafeMode and RhythmUltraSafeMode) or WillAttackSomethingNearby then
-			EndButtons = EndButtons | IN_ATTACK --User forced to attack
+		EndButtons = EndButtons | IN_ATTACK --User forced to attack
+		if RhythmUltraSafeMode and not WillAttackSomethingNearby then
+			EndButtons = EndButtons ~ IN_ATTACK
 		end
 	end
 	if CurrentAttackingTick > 3 then
@@ -121,11 +135,11 @@ local function OnScreenDraw()
 
 	--If we're on the 4th beat, play a different sound, and force an attack
 	if not (CurrentTickCount == 4) then
-		if not RhythmNoSounds and not (RhythmAttackTime < 0.6) then engine.PlaySound(RhythmSoundStep) end
+		if not RhythmNoStepSound and not (RhythmAttackTime < 0.6) then engine.PlaySound(RhythmSoundStep) end
 	else
 		CurrentTickCount = 0
 		CurrentAttackingTick = 1
-		if not RhythmNoSounds then engine.PlaySound(RhythmSoundBeat) end
+		if not RhythmNoBeatSound then engine.PlaySound(RhythmSoundBeat) end
 	end
 end
 
@@ -161,6 +175,12 @@ local boolean function CanHitscanEnemies()
 		--The line will always hit the model
 		local TracedLine = engine.TraceLine(LocalPlayerPos, EnemyPlayerPos, 1)
 		if not (TracedLine.entity:IsPlayer()) or (TracedLine.entity:IsDormant()) then
+			i = i + 1
+			goto continue
+		end
+		
+		print(vector.Distance(LocalPlayerPos, EnemyPlayerPos))
+		if(vector.Distance(LocalPlayerPos, EnemyPlayerPos) > RhythmMaximumDistance) then
 			i = i + 1
 			goto continue
 		end
