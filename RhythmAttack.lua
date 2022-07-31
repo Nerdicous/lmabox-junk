@@ -2,7 +2,7 @@ print("Rhythm Time Attacking script created by Nerdicous (https://lmaobox.net/fo
 --[[
 	Rhythm Time Attacking -- Nerdicous on LMAOBOX.net
 	Makes the player attack at a preset interval (RhythmAttackTime).
-	You can change these topmost variables in-game by typing "lua <command> = <value>"
+	You can change these topmost variables in-game by typing "lua <name> = <value>"
 --]]
 
 --RhythmAttackTime: The time (in seconds) before you are forced to attack
