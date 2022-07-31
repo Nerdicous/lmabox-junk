@@ -134,7 +134,6 @@ local boolean function CanHitscanEnemies()
 		-- This has -185 because that's when other players enter the Aim FOV line from firstperson
 		if gui.GetValue("aim fov") < 170 then
 			local Angle = -(GetFOVAngle(LocalPlayerViewAngle, entities.GetLocalPlayer():GetAbsOrigin(), EnemyPlayer:GetAbsOrigin()) - 185)
-			print(Angle)
 			if(Angle > gui.GetValue("aim fov")) then
 				i = i + 1
 				goto continue
