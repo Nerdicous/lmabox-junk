@@ -215,7 +215,7 @@ local boolean function CanHitscanEnemies()
 
 		--Is currently using vaccinator uber
 		--TODO: get damage type of currently-held weapon (dont know how to do either of those easily)
-		if(gui.GetValue("ignore vacc ubercharge") == "On") then
+		if gui.GetValue("ignore vacc ubercharge") ~= 0 then
 			--Bullet Resistance
 			if(EnemyPlayer:InCond(TFCond_SmallBulletResist) or EnemyPlayer:InCond(TFCond_UberBulletResist)) then
 				i = i + 1
