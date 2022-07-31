@@ -3,30 +3,57 @@ print("Rhythm Time Attacking script created by Nerdicous (https://lmaobox.net/fo
 	Rhythm Time Attacking -- Nerdicous on LMAOBOX.net
 	Makes the player attack at a preset interval (RhythmAttackTime).
 	You can change these topmost variables in-game by typing "lua <command> = <value>"
+	
+	lua RhythmAttackTime = 1
+	lua RhythmSafeMode = false
+	lua RhythmToggleKey = KEY_Z
 --]]
 
 --RhythmAttackTime: The time (in seconds) before you are forced to attack
 --RhythmSoundStep: The sound that plays every 1/4th of a beat
 --RhythmSoundBeat: The sound that plays every time you are forced to attack
 --RhythmSafeMode: If true, the timer will only start when an enemy is able to be shot
-	--RhythmContinueMode: If true, the timer won't reset when an enemy isn't able to be shot
+	--(if true) RhythmContinueMode: If true, the timer won't reset when an enemy isn't able to be shot
+	--(if false) RhythmUltraSafeMode: If true, the player won't attack when there isn't anything to shoot
 --RhythmOnlyForceAttacks: If true, the player will be unable to attack on their own, to include the aimbot tools
 --RhythmNoSounds: If true, script sounds won't play
 RhythmAttackTime = 2.5
-RhythmSoundStep = "ui/mm_medal_click.wav"
+RhythmSoundStep = "ui/mm_medal_click.wav"	--Sounds in the custom folder work also
 RhythmSoundBeat = "ui/mm_rank_up_achieved.wav"
 RhythmSafeMode = true
 RhythmContinueMode = false
+RhythmUltraSafeMode = true
 RhythmOnlyForceAttacks = false
 RhythmNoSounds = false
 
+RhythmToggleKey = MOUSE_4	--see https://lmaobox.net/lua/Lua_Constants/
 
+
+local RhythmEnabled = true
+local LastRhythmEnabled = true
 local NextTime_Attack = 0
 local CurrentTickCount = 0
 local CurrentAttackingTick = 0
 local prevforceattack = false
+local WillAttackSomethingNearby = false
 
-local function OnCreateMove( cmd )
+local function OnCreateMove(cmd)
+	if input.IsButtonDown(RhythmToggleKey) and LastRhythmEnabled == RhythmEnabled then
+		RhythmEnabled = not RhythmEnabled
+		print("Rhythm Attack Toggled to " .. tostring(RhythmEnabled) .. ".")
+		return
+	end
+	if input.IsButtonDown(RhythmToggleKey) and not LastRhythmEnabled == RhythmEnabled then
+		return
+	end
+	
+	LastRhythmEnabled = RhythmEnabled
+
+	if not RhythmEnabled then
+		return
+	end
+
+
 	local EndButtons = cmd:GetButtons()
 	--Force the client to stop attacking if the script decides they currently shouldn't be
 	if RhythmOnlyForceAttacks then
@@ -48,7 +75,10 @@ local function OnCreateMove( cmd )
 	--Handled by increments, because attacking is ignored if we're reloading
 	if CurrentAttackingTick ~= 0 then
 		CurrentAttackingTick = CurrentAttackingTick + 1
-		EndButtons = EndButtons | IN_ATTACK --User forced to attack
+		--Force an attack if in a valid state to
+		if not (RhythmSafeMode and RhythmUltraSafeMode) or WillAttackSomethingNearby then
+			EndButtons = EndButtons | IN_ATTACK --User forced to attack
+		end
 	end
 	if CurrentAttackingTick > 3 then
 		CurrentAttackingTick = 0
@@ -65,8 +95,11 @@ local function OnScreenDraw()
 	if not (NextTime_Attack < os.clock()) then
 		return
 	end
-	--Start over if we go into a different menu
-	if engine.Con_IsVisible() or engine.IsGameUIVisible() or not entities.GetLocalPlayer():IsAlive() then
+
+	WillAttackSomethingNearby = false
+
+	--Start over if we go into a different menu or if we're not active
+	if engine.Con_IsVisible() or engine.IsGameUIVisible() or not entities.GetLocalPlayer():IsAlive() or not RhythmEnabled then
 		CurrentTickCount = 0
 		return
 	end
@@ -74,7 +107,9 @@ local function OnScreenDraw()
 	--Set the time of the next beat
 	NextTime_Attack = os.clock() + (RhythmAttackTime / 4)
 
-	if RhythmSafeMode and not CanHitscanEnemies() then
+	WillAttackSomethingNearby = CanHitscanEnemies()
+
+	if RhythmSafeMode and not WillAttackSomethingNearby then
 		if not RhythmContinueMode then
 			CurrentTickCount = 0
 		end
@@ -143,19 +178,19 @@ local boolean function CanHitscanEnemies()
 		--Don't countdown if any of the "Ignore X" checks are involved
 
 		--Is steam friend
-		if(gui.GetValue("ignore steam friends") and steam.IsFriend(client.GetPlayerInfo(EnemyPlayer:GetIndex())["SteamID"])) then
+		if gui.GetValue("ignore steam friends") ~= 0 and steam.IsFriend(client.GetPlayerInfo(EnemyPlayer:GetIndex())["SteamID"]) then
 			i = i + 1
 			goto continue
 		end
 
 		--Ignore Taunting
-		if(gui.GetValue("ignore taunting") and EnemyPlayer:InCond(TFCond_Taunting)) then
+		if gui.GetValue("ignore taunting") ~= 0 and EnemyPlayer:InCond(TFCond_Taunting) then
 			i = i + 1
 			goto continue
 		end
 
 		--Ignore Bonk Immunity
-		if(gui.GetValue("ignore bonked") and EnemyPlayer:InCond(TFCond_Bonked)) then
+		if gui.GetValue("ignore bonked") ~= 0 and EnemyPlayer:InCond(TFCond_Bonked) then
 			i = i + 1
 			goto continue
 		end
@@ -181,19 +216,19 @@ local boolean function CanHitscanEnemies()
 		end
 
 		--Ignore Disguised
-		if(gui.GetValue("ignore disguised") and EnemyPlayer:InCond(TFCond_Disguised)) then
+		if gui.GetValue("ignore disguised") ~= 0 and EnemyPlayer:InCond(TFCond_Disguised) then
 			i = i + 1
 			goto continue
 		end
 
 		--Ignore Cloaked
-		if(gui.GetValue("ignore cloaked")) and (EnemyPlayer:InCond(TFCond_Cloaked) or EnemyPlayer:InCond(TFCond_CloakFlicker)) then
+		if gui.GetValue("ignore cloaked") ~= 0 and (EnemyPlayer:InCond(TFCond_Cloaked) or EnemyPlayer:InCond(TFCond_CloakFlicker)) then
 			i = i + 1
 			goto continue
 		end
 
 		--Ignore Deadringer
-		if(gui.GetValue("ignore deadringer") and EnemyPlayer:InCond(TFCond_DeadRingered)) then
+		if gui.GetValue("ignore deadringer") ~= 0 and EnemyPlayer:InCond(TFCond_DeadRingered) then
 			i = i + 1
 			goto continue
 		end
