@@ -9,11 +9,10 @@ local STATE_ONLY_MELEE <const> = 7
 local STATE_RANDOM_TAUNT <const> = 8
 local STATE_SLOW_SPEED <const> = 9
 local STATE_TAUNT_AFTER_KILL <const> = 10
-local STATE_WEIRD_MOVEMENT <const> = 11
-local STATE_CONSTANT_SIDE_MOVEMENT <const> = 12
-local STATE_TRANSPARENT_EVERYTHING <const> = 13
-local STATE_LOWERED_COOLDOWN <const> = 14
-local STATE_INCREASED_COOLDOWN <const> = 15
+local STATE_CONSTANT_SIDE_MOVEMENT <const> = 11
+local STATE_TRANSPARENT_EVERYTHING <const> = 12
+local STATE_LOWERED_COOLDOWN <const> = 13
+local STATE_INCREASED_COOLDOWN <const> = 14
 
 --Do not change these values
 ChaosState = {}
@@ -24,10 +23,9 @@ ChaosState[STATE_INSANE_FOV] = false	--Jitter around 110 FOV
 ChaosState[STATE_LEFT_RIGHT_SWITCHED] = false	--Left/Right mouse buttons are switched
 ChaosState[STATE_BACKWARDS_WALK] = false	--Player's movement is reversed
 ChaosState[STATE_ONLY_MELEE] = false	--Player is forced to only use their melee weapon, but only when switching weapons
-ChaosState[STATE_RANDOM_TAUNT] = false	--Player is forced to taunt, and the time to roll another effect is lowered by 4 seconds
+ChaosState[STATE_RANDOM_TAUNT] = false	--Player is forced to taunt, and the time to roll another effect is lowered by 
 ChaosState[STATE_SLOW_SPEED] = false	--Player is forced to walk around slower
 ChaosState[STATE_TAUNT_AFTER_KILL] = false	--Player taunts after killing someone
-ChaosState[STATE_WEIRD_MOVEMENT] = false	--Movement is all kinds of fucked in this house
 ChaosState[STATE_CONSTANT_SIDE_MOVEMENT] = false	--The player's side movement is always 1
 ChaosState[STATE_TRANSPARENT_EVERYTHING] = false	--The skybox alpha is set to 0
 ChaosState[STATE_LOWERED_COOLDOWN] = false		--When true, decreases the cooldown by 3 seconds
@@ -194,14 +192,7 @@ local function OnModelDraw(Context)
 	if Entity == nil then
 		return
 	end
-	
-	if ChaosState[STATE_WEIRD_MOVEMENT] then
-		local EntityPosition = Entity:GetAbsPosition()
-		local EntityPositionForward = EntityPosition:Forward()
-		Entity:SetAbsPosition(EntityPositionForward)
-		Entity:SetPropVector(EntityPositionForward, "tflocaldata", "m_vecOrigin")
-		Entity:SetPropVector(EntityPosition-EntityPositionForward, "tflocaldata", "m_angEyeAngles[0]")
-	end
+
 	local ForcedMaterial = MaterialColorByIndex[Entity:GetIndex()]
 	Context:ForcedMaterialOverride(ForcedMaterial)
 end
